@@ -408,6 +408,12 @@ fn generate_image() {
     let buf = svg_to_avif(&table_chart.svg().unwrap()).unwrap();
     common::save_asset("image/table.avif", &buf);
 
+    let sparkline =
+        charts_rs::TableChart::from_json(include_str!("../asset/table_chart/sparkline.json"))
+            .unwrap();
+    let buf = svg_to_png(&sparkline.svg().unwrap()).unwrap();
+    common::save_asset("image/table-sparkline.png", &buf);
+
     let multi_chart_json = r###"{
             "type": "multi_chart",
             "margin": {
@@ -900,6 +906,10 @@ fn generate_image() {
     let buf = svg_to_webp(&multi_chart.svg().unwrap()).unwrap();
     common::save_asset("image/multi-chart.webp", &buf);
 
+    let aligned = MultiChart::from_json(include_str!("../asset/multi_chart/aligned.json")).unwrap();
+    let buf = svg_to_png(&aligned.svg().unwrap()).unwrap();
+    common::save_asset("image/multi-aligned.png", &buf);
+
     // theme preview image for shadcn
     let shadcn_chart = MultiChart::from_json(
         &multi_chart_json.replace(r###""theme": "grafana""###, r###""theme": "shadcn""###),
@@ -1315,6 +1325,13 @@ fn generate_image() {
         (
             "lines",
             charts_rs::LinesChart::from_json(include_str!("../asset/lines_chart/flows.json"))
+                .unwrap()
+                .svg()
+                .unwrap(),
+        ),
+        (
+            "bullet",
+            charts_rs::BulletChart::from_json(include_str!("../asset/bullet_chart/basic.json"))
                 .unwrap()
                 .svg()
                 .unwrap(),

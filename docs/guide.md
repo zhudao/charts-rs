@@ -19,7 +19,9 @@ a word of explanation, fonts and output. Every JSON key is listed in the
   [density contours](#density-contours),
   [histogram](#histogram), [polar bar](#polar-bar-chart),
   [chord](#chord-chart), [gantt](#gantt-chart), [map](#map-chart),
-  [lines](#lines-chart)
+  [lines](#lines-chart), [bullet](#bullet-chart),
+  [sparklines in a table](#sparklines-in-a-table),
+  [charts one above the other](#charts-one-above-the-other)
 - [Fonts](#fonts)
 - [Development](#development)
 
@@ -672,6 +674,108 @@ and latitude, projected like a map, and the regions are drawn underneath.
 In Rust: `LinesChart::new(vec![((0.0, 0.0), (40.0, 30.0), 80.0).into()])`.
 A fuller picture, sixteen flows over the sample country, is
 `asset/lines_chart/flows.json`.
+
+### Bullet chart
+
+A `BulletChart` puts measures against their targets, a row each: a bar for
+the value, a line across it for the target, and bands behind them for what
+is poor, fair and good. Five of them take the room of one gauge, which makes
+them the chart for a report of KPIs.
+
+<p align="center">
+  <img src="../asset/image/bullet.png" width="60%" alt="A bullet chart of five measures">
+</p>
+
+```json
+{
+  "label_show": true,
+  "bullets": [
+    {"name": "Done in time (%)", "value": 92, "target": 95, "ranges": [80, 90, 100], "max": 100},
+    {"name": "Wait (min)", "value": 12, "target": 10, "ranges": [10, 20, 30]}
+  ]
+}
+```
+
+- Every row has a scale of its own, from 0 (or from below it, where a value
+  is) to the first round number past its largest value, unless `min` and
+  `max` say otherwise. Its ticks are round numbers.
+- The bands are shades of the text color, the first one the darkest;
+  `range_colors` gives them colors of their own. A measure for which less is
+  better, a waiting time, wants them the other way round.
+- `label_show` writes the value to the right of each row, in the format of
+  `series_label_formatter`; the scales take the format of the first of
+  `y_axis_configs` (`axis_formatter`), and `x_axis_hidden` leaves them out.
+
+In Rust: `BulletChart::new(vec![("CPU", 72.0, 80.0).into()])` — a name, a
+value and a target; a `Bullet` has the bands, the scale and a color as well.
+
+### Sparklines in a table
+
+A cell of a `TableChart` that is an array of numbers is a sparkline: a
+small line of the values, drawn in place of text, from the lowest at the
+bottom of the cell to the highest at the top, with a dot on the last one.
+
+<p align="center">
+  <img src="../asset/image/table-sparkline.png" width="60%" alt="A table of servers with the trend of each">
+</p>
+
+```json
+{
+  "data": [
+    ["Server", "CPU", "Last 24 hours"],
+    ["api-1", "72%", [42, 45, 51, 48, 60, 66, 63, 71, 69, 74, 70, 72]],
+    ["api-2", "38%", [30, 34, 31, 29, 35, 41, null, null, 37, 38]]
+  ]
+}
+```
+
+- Every sparkline has a scale of its own: it shows the shape of its values,
+  not how they compare with those of the other rows.
+- A `null` leaves a gap. `"sparkline_type": "bar"` draws a bar for each
+  value instead, from 0; `sparkline_color` colors them.
+- A number in a cell is written as it is, and `null` is an empty cell.
+
+In Rust: `table.sparklines.push(TableSparkline { indexes: vec![1, 2],
+values: vec![42.0, 45.0, 51.0] })`, `indexes` being the row and the column.
+
+### Charts one above the other
+
+A `MultiChart` stacks its children; each draws its own axes, and the plot
+of each starts after the labels of its y axis — wider for the volumes of a
+stock than for its prices. With `align_plots` the plots line up: they start
+where the one that starts furthest in starts and end where the one that
+ends furthest in ends, so that a day is in the same place in each.
+
+<p align="center">
+  <img src="../asset/image/multi-aligned.png" width="60%" alt="Prices, volumes and MACD of a month, lined up">
+</p>
+
+```json
+{
+  "align_plots": true,
+  "child_charts": [
+    {"type": "candlestick", "height": 300, "x_axis_hidden": true, "x_axis_data": ["10-01", "10-02"],
+     "series_list": [{"name": "Day", "data": [100, 101.5, 99.2, 102.1, 101.5, 99.8, 99.1, 102.4]}]},
+    {"type": "bar", "height": 120, "legend_show": false, "x_axis_data": ["10-01", "10-02"],
+     "series_list": [{"name": "Volume", "data": [1830000, 2240000]}]}
+  ]
+}
+```
+
+- It works on the bar, line, candlestick, histogram, scatter, box plot and
+  waterfall children that stack; one placed by `x` and `y` keeps its plot
+  where its axes put it.
+- It is done with `grid_left` and `grid_right`, which every one of those
+  charts takes: how far in its plot starts and ends at the least. They line
+  up charts that are drawn apart, too — two SVGs on one page.
+- A child that wants its plot further in (its own `grid_left`) has it
+  there, and the others line up with it.
+
+The example of the gallery is `asset/multi_chart/aligned.json`: a month of
+prices with their moving averages, the volumes below them and the MACD
+below those. The bars of the volumes and of the MACD are red or green with
+the day (`colors` of a series, a color for each bar), and the first color
+of the palette, that of the candles and the bars in the legend, is a grey.
 
 ## Fonts
 

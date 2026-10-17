@@ -101,7 +101,7 @@ pub(crate) static MARGIN_FIELDS: &[Field] = &[
 static SYMBOL_FIELDS: &[Field] = &[
     f(
         "type",
-        Kind::Enum(&["circle", "rect", "square", "triangle", "diamond"]),
+        Kind::Enum(&["circle", "rect", "square", "triangle", "diamond", "none"]),
     ),
     f("size", Kind::Number),
     f("radius", Kind::Number),
@@ -254,6 +254,8 @@ pub(crate) static BASE_FIELDS: &[Field] = &[
     f("grid_stroke_color", Kind::Color),
     f("grid_stroke_width", Kind::Number),
     f("grid_stroke_dash_array", Kind::String),
+    f("grid_left", Kind::Number),
+    f("grid_right", Kind::Number),
     f("series_stroke_width", Kind::Number),
     f("series_label_font_color", Kind::Color),
     f("series_label_font_size", Kind::Number),
@@ -425,6 +427,23 @@ pub(crate) static MAP_FIELDS: &[Field] = &[
     f("visual_map_show", Kind::Bool),
 ];
 
+static BULLET_ITEM_FIELDS: &[Field] = &[
+    f("name", Kind::String),
+    f("value", Kind::Number),
+    f("target", Kind::Number),
+    f("ranges", Kind::NumberArray),
+    f("min", Kind::Number),
+    f("max", Kind::Number),
+    f("color", Kind::Color),
+];
+
+pub(crate) static BULLET_FIELDS: &[Field] = &[
+    f("bullets", Kind::ArrayOf(BULLET_ITEM_FIELDS)),
+    f("range_colors", Kind::ColorArray),
+    f("target_color", Kind::Color),
+    f("label_show", Kind::Bool),
+];
+
 pub(crate) static LINES_FIELDS: &[Field] = &[
     f("lines", Kind::Array),
     f("curveness", Kind::Number),
@@ -571,6 +590,8 @@ pub(crate) static TABLE_FIELDS: &[Field] = &[
     f("data", Kind::Array),
     f("spans", Kind::NumberArray),
     f("text_aligns", Kind::StringArray),
+    f("sparkline_type", Kind::Enum(&["line", "bar"])),
+    f("sparkline_color", Kind::Color),
     f("border_color", Kind::Color),
     f("border_width", Kind::Number),
     f("header_row_padding", Kind::Margin),
@@ -625,6 +646,7 @@ pub(crate) static MULTI_FIELDS: &[Field] = &[
     f("child_charts", Kind::Array),
     f("compact", Kind::Bool),
     f("texts", Kind::ArrayOf(TEXT_FIELDS)),
+    f("align_plots", Kind::Bool),
 ];
 
 /// Fields a multi chart child carries on top of its own chart's fields.
@@ -1003,6 +1025,7 @@ mod tests {
                 BASE_FIELDS,
                 HORIZONTAL_BAR_FIELDS
             ),
+            chart!("bullet", BulletChart, BASE_FIELDS, BULLET_FIELDS),
             chart!("line", LineChart, BASE_FIELDS),
             chart!("lines", LinesChart, BASE_FIELDS, LINES_FIELDS),
             chart!("map", MapChart, BASE_FIELDS, MAP_FIELDS),
@@ -1085,6 +1108,7 @@ mod tests {
             "mark_lines" => vec![json!({"category": "average"}), json!({"category": "value"})],
             "mark_points" => vec![json!({"category": "max"}), json!({"category": "index"})],
             "texts" => vec![json!({"text": "t"})],
+            "bullets" => vec![json!({"name": "b", "value": 1})],
             "mark_areas" => vec![json!({"from": 1, "to": 2})],
             "band" => vec![json!({"lower": [1, 2], "upper": [3, 4]})],
             "nodes" => vec![json!({"name": "a"})],

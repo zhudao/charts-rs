@@ -14,7 +14,7 @@
 
 - [值类型](#值类型)
 - [通用参数](#通用参数)
-- 图表：[Bar](#bar)、[Horizontal bar](#horizontal-bar)、[Line](#line)、[Pie](#pie)、[Radar](#radar)、[Scatter](#scatter)、[Candlestick](#candlestick)、[Table](#table)、[Heatmap](#heatmap)、[Funnel](#funnel)、[Waterfall](#waterfall)、[Calendar](#calendar)、[Gauge](#gauge)、[Treemap](#treemap)、[Box plot](#box-plot)、[Sunburst](#sunburst)、[Sankey](#sankey)、[Tree](#tree)、[Graph](#graph)、[Parallel](#parallel)、[Theme river](#theme-river)、[Histogram](#histogram)、[Polar bar](#polar-bar)、[Chord](#chord)、[Gantt](#gantt)、[Map](#map)、[Multi chart](#multi-chart)
+- 图表：[Bar](#bar)、[Horizontal bar](#horizontal-bar)、[Line](#line)、[Pie](#pie)、[Radar](#radar)、[Scatter](#scatter)、[Candlestick](#candlestick)、[Table](#table)、[Heatmap](#heatmap)、[Funnel](#funnel)、[Waterfall](#waterfall)、[Calendar](#calendar)、[Gauge](#gauge)、[Bullet](#bullet)、[Treemap](#treemap)、[Box plot](#box-plot)、[Sunburst](#sunburst)、[Sankey](#sankey)、[Tree](#tree)、[Graph](#graph)、[Parallel](#parallel)、[Theme river](#theme-river)、[Histogram](#histogram)、[Polar bar](#polar-bar)、[Chord](#chord)、[Gantt](#gantt)、[Lines](#lines)、[Map](#map)、[Multi chart](#multi-chart)
 - [供工具使用的键](#供工具使用的键)
 
 ## 值类型
@@ -126,6 +126,8 @@
 | `grid_stroke_color` | 颜色 | 主题 | 网格线颜色。 |
 | `grid_stroke_width` | 数字 | `1` | 网格线宽度。 |
 | `grid_stroke_dash_array` | 字符串 |  | 网格线的虚线样式，写法同 SVG 的 `stroke-dasharray`（例如 `"4,2"`）。默认为实线。作用于带 x、y 轴的图表，甘特图、雷达图和极坐标柱状图的网格，以及单轴散点图（punch card）的行线和平行坐标图的轴线。 |
+| `grid_left` | 数字 |  | 绘图区左边缘离图表左边缘的最小距离：比 y 轴所需的位置更靠里，用于让上下排列的图表绘图区对齐（见组合图的 `align_plots`）。y 轴需要更多空间时以 y 轴为准。适用于柱状图、折线图、蜡烛图、直方图、散点图、箱线图和瀑布图；散点图绘图区右侧的边缘直方图仍紧贴绘图区。 |
+| `grid_right` | 数字 |  | 绘图区右边缘离图表右边缘的最小距离，含义同 `grid_left`。 |
 
 ### 系列
 
@@ -234,7 +236,7 @@
 
 | 键 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
-| `type` | `"circle"` / `"rect"` / `"square"` / `"triangle"` / `"diamond"` |  | 标记的形状（`square` 与 `rect` 相同）。 |
+| `type` | `"circle"` / `"rect"` / `"square"` / `"triangle"` / `"diamond"` / `"none"` |  | 标记的形状（`square` 与 `rect` 相同）；`"none"` 表示不画标记，与 `null` 相同。 |
 | `size` | 数字 |  | 标记的大小：半径，或边长的一半。 |
 | `radius` | 数字 |  | 与 `size` 含义相同；两者都设置时以 `size` 为准。 |
 | `color` | 颜色 |  | 标记的填充颜色；不设置时标记为空心。 |
@@ -574,9 +576,11 @@
 | `sub_title_margin` | 边距 |  | 副标题四周的边距。 |
 | `sub_title_align` | `"left"` / `"center"` / `"right"` | `"center"` | 副标题的水平对齐方式。 |
 | `sub_title_height` | 数字 | `20` | 副标题行占用的高度。 |
-| `data` | 数组 |  | 表格内容，每行是一个字符串数组；第一行为表头。 |
+| `data` | 数组 |  | 表格内容，每行是一个单元格数组；第一行为表头。单元格可以是字符串、数字（原样显示）或 `null`（空单元格）；数字数组表示迷你图，代替文字绘制在单元格里：一条反映这组数值走势的小折线，最小值在单元格底部、最大值在顶部，最后一个值上有圆点。数组里的 `null` 会让折线断开。 |
 | `spans` | 数字数组 |  | 各列宽度：小于 1 的值表示占表格宽度的比例，更大的值表示像素；其余列平分剩余宽度。 |
 | `text_aligns` | 字符串数组 |  | 各列文字的对齐方式：`"left"`、`"center"` 或 `"right"`。 |
+| `sparkline_type` | `"line"` / `"bar"` | `"line"` | 迷你图的样式：折线，或每个值一根从 0 开始的柱子。 |
+| `sparkline_color` | 颜色 |  | 迷你图的颜色；默认取主题调色板的第一个颜色。 |
 | `border_color` | 颜色 | 主题 | 行间分隔线的颜色。 |
 | `border_width` | 数字 | `1` | 行间分隔线及外边框的宽度。 |
 | `header_row_padding` | 边距 | `{left: 10, top: 8, right: 10, bottom: 8}` | 表头行的内边距。 |
@@ -789,6 +793,47 @@
   "value_formatter": "{c}%",
   "series_list": [
     {"name": "CPU", "data": [72]}
+  ]
+}
+```
+
+## Bullet
+
+`BulletChart::from_json` — 子弹图：每个指标一行，横条是实际值，横穿它的短线是目标值，背后的色带表示差、中、良等区间，每行有自己的刻度。一个仪表盘的位置可以放下好几个指标。不使用 `series_list`。
+
+<!-- keys: bullet -->
+
+| 键 | 类型 | 默认值 | 说明 |
+|---|---|---|---|
+| `bullets` | 对象数组 |  | 各个指标，每个一行，自上而下。见 [`bullets[]`](#bullets)。 |
+| `range_colors` | 颜色数组 |  | 各色带的颜色，从第一段起。不设置时取文字颜色的深浅变化，第一段最深。越小越好的指标（如等待时间）通常要把颜色反过来设置。 |
+| `target_color` | 颜色 |  | 目标线的颜色；默认与标题颜色相同。 |
+| `label_show` | 布尔 | `false` | 在每行右侧写出数值，格式取 `series_label_formatter`：`{c}` 为数值，`{b}` 为名称。 |
+
+名称使用 x 轴的字体；每行下方的刻度使用 `y_axis_configs` 第一项的字体、颜色和格式（`axis_formatter`），与条形图的数值轴一致；`x_axis_hidden` 可以隐藏刻度。刻度值由图表自动取整，不使用 `axis_split_number`。开启 `tooltip_show` 后，悬停在横条上会显示名称和数值。
+
+### `bullets[]`
+
+<!-- keys: bullet.bullets -->
+
+| 键 | 类型 | 默认值 | 说明 |
+|---|---|---|---|
+| `name` | 字符串 |  | 指标名称，写在该行左侧；宽于图表三分之一时以省略号截断。 |
+| `value` | 数字 |  | 实际值，画成从 0 开始的横条（0 不在刻度范围内时从刻度起点开始）。不设置时该行没有横条。 |
+| `target` | 数字 |  | 目标值，画成横穿横条的短线。 |
+| `ranges` | 数字数组 |  | 各色带的终点：第一段从刻度起点到第一个值，下一段从那里到第二个值，依此类推。不设置时整行只有一段色带。 |
+| `min` | 数字 |  | 刻度起点。默认为 0；有负值时取其下方的整数值。 |
+| `max` | 数字 |  | 刻度终点。默认取实际值、目标值和各区间终点中的最大值，向上取整。 |
+| `color` | 颜色 |  | 横条颜色；默认取调色板的第一个颜色。 |
+
+<!-- example: bullet -->
+
+```json
+{
+  "label_show": true,
+  "bullets": [
+    {"name": "按时办结率 (%)", "value": 92, "target": 95, "ranges": [80, 90, 100], "max": 100},
+    {"name": "平均等待 (分钟)", "value": 12, "target": 10, "ranges": [10, 20, 30]}
   ]
 }
 ```
@@ -1368,6 +1413,7 @@
 | `child_charts` | 数组 |  | 子图表，自上而下依次绘制：每项是对应图表类型的参数，外加下面的键。 |
 | `compact` | 布尔 | `false` | 组合图及所有子图表都输出精简 SVG。 |
 | `texts` | 对象数组 |  | 叠加在整个组合图上的文字：版权声明、水印等。见 [`texts[]`](#texts)。子图表也可以有自己的 `texts`，叠加在该子图表上。文字预留的空间位于 `margin` 之外：子图表从其内侧开始排列，但用 `x`、`y` 指定了位置的子图表保持原位。 |
+| `align_plots` | 布尔 | `false` | 让上下排列的子图表绘图区对齐：都从最靠右的左边缘开始、到最靠左的右边缘结束，不受各自坐标轴宽度的影响——例如蜡烛图和下方的成交量柱按日期上下对齐。通过设置柱状图、折线图、蜡烛图、直方图、散点图、箱线图和瀑布图子图表的 `grid_left`、`grid_right` 实现；用 `x`、`y` 指定了位置的子图表不参与。 |
 
 ### `child_charts[]`
 
@@ -1375,7 +1421,7 @@
 
 | 键 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
-| `type` | 字符串 |  | 子图表类型：`bar`（默认）、`line`、`horizontal_bar`、`pie`、`radar`、`table`、`scatter`、`candlestick`、`heatmap`、`funnel`、`waterfall`、`calendar`、`gauge`、`treemap`、`box_plot`、`sunburst`、`sankey`、`tree`、`graph`、`parallel`、`theme_river`、`histogram`、`polar_bar`、`chord`、`gantt` 或 `map`。 |
+| `type` | 字符串 |  | 子图表类型：`bar`（默认）、`line`、`horizontal_bar`、`pie`、`radar`、`table`、`scatter`、`candlestick`、`heatmap`、`funnel`、`waterfall`、`calendar`、`gauge`、`treemap`、`box_plot`、`sunburst`、`sankey`、`tree`、`graph`、`parallel`、`theme_river`、`histogram`、`polar_bar`、`chord`、`gantt`、`map`、`lines` 或 `bullet`。 |
 | `x` | 数字 |  | 子图表的水平位置；设置了 `x` 或 `y` 后，子图表放在指定位置而不是排在上一个下方。 |
 | `y` | 数字 |  | 子图表的垂直位置。 |
 
